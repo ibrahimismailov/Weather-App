@@ -8,7 +8,8 @@
 import UIKit
 //MARK: - WeatherViewController
 class WeatherViewController: UIViewController {
-var weatherManager = WeatherManager()
+    
+    var weatherManager = WeatherManager()
     var weatherdata : WeatherData?
     let searchController = UISearchController()
 
@@ -58,8 +59,8 @@ var weatherManager = WeatherManager()
             countryLabel.topAnchor.constraint(equalTo:view.safeAreaLayoutGuide.topAnchor, constant: 40),
             countryLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             countryLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            countryLabel.heightAnchor.constraint(equalToConstant: CGFloat(50)),
-            countryLabel.widthAnchor.constraint(equalToConstant: CGFloat(50)),
+            countryLabel.heightAnchor.constraint(equalToConstant: CGFloat(80)),
+            countryLabel.widthAnchor.constraint(equalToConstant: CGFloat(80)),
 
             degreLabel.topAnchor.constraint(equalTo: countryLabel.bottomAnchor, constant: 20),
             degreLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
@@ -74,7 +75,6 @@ var weatherManager = WeatherManager()
             weatherimageView.widthAnchor.constraint(equalToConstant: CGFloat(60))
          ])
     }
-
 }
 //MARK: - UITextFieldDelegate
 extension WeatherViewController: UISearchBarDelegate {
@@ -82,14 +82,10 @@ extension WeatherViewController: UISearchBarDelegate {
         guard  let text = searchBar.text else {
             return
         }
-        
         let urlString = "https://api.openweathermap.org/data/2.5/weather?&appid=ac6ea6dbc7937e43a88d224a2993f0ef&units=metric\(text)"
         DispatchQueue.main.async {
             self.weatherManager.fetchWeather(cityName: urlString)
         }
-       
-      
- 
      }
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.endEditing(true)
@@ -113,20 +109,14 @@ extension WeatherViewController: UISearchBarDelegate {
         }
         searchBar.text = ""
     }
-
 }
 //MARK: - WeatherManagerDelegate
-
 extension WeatherViewController: WeatherManagerDelegate {
-
-    
     func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
         DispatchQueue.main.async {
-            self.degreLabel.text = "\(weather.temperatureString )˚C "
-            self.countryLabel.text = weather.cityName
+            self.degreLabel.text =  "\(weather.temperatureString) ˚F"
             self.weatherimageView.image = UIImage(systemName: weather.conditionName)
         }
- 
     }
     func didFailWithError(error: Error) {
         print(error)

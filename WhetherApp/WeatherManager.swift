@@ -29,12 +29,12 @@ class WeatherManager {
                 if let safeData = data {
                     if let weather = self.parseJson(safeData) {
                         self.delegate?.didUpdateWeather(self, weather: weather)
+                        print(weather.temperatureString)
                     }
                 }
             }
             task.resume()
         }
-        
     }
     func parseJson (_ weatherData: Data) -> WeatherModel?{
         let decoder = JSONDecoder()
@@ -52,7 +52,6 @@ class WeatherManager {
             print(error.localizedDescription)
             return nil
         }
-    
     }
 }
 
