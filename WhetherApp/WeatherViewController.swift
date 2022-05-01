@@ -6,118 +6,131 @@
 //
 
 import UIKit
-
-class WeatherViewController: UIViewController, UITextFieldDelegate {
+//MARK: - WeatherViewController
+class WeatherViewController: UIViewController {
 var weatherManager = WeatherManager()
-    private let textFielda: UITextField  = {
-        let textField =  UITextField()
-        textField.layer.borderWidth = 0.4
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "Search"
-        textField.layer.cornerRadius = 10
-        return textField
-    }()
+    var weatherdata : WeatherData?
+    let searchController = UISearchController()
+
     private let weatherimageView: UIImageView  = {
         let image  =  UIImageView()
         image.image = UIImage(systemName: "cloud.sun")
         image.translatesAutoresizingMaskIntoConstraints = false
+        image.contentMode = .scaleAspectFit
         image.tintColor = .black
         return image
     }()
     private let degreLabel: UILabel  = {
         let label =  UILabel()
         label.text = "21˚C"
+        label.textAlignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 50, weight: .bold)
+        label.font = .systemFont(ofSize: 30, weight: .semibold)
         return label
     }()
     private let countryLabel: UILabel  = {
         let label =  UILabel()
         label.text = "London"
+        label.textAlignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 20, weight: .medium)
+        label.font = .systemFont(ofSize: 60, weight: .bold)
         return label
-    }()
-    private let searchButton: UIButton  = {
-        let button =  UIButton()
-        button.tintColor = .black
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "magnifyingglass.circle"), for: .normal)
-        button.addTarget(self, action: #selector(didtapSearch), for: .touchUpInside)
-        return button
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
-        view.addSubview(textFielda)
+        view.backgroundColor = .systemTeal
+        addViews()
+        setConstraints()
+        navigationItem.searchController = searchController
+        searchController.searchBar.delegate = self
+        weatherManager.delegate = self
+        title = "Weather"    }
+    
+    private func addViews() {
         view.addSubview(degreLabel)
         view.addSubview(countryLabel)
         view.addSubview(weatherimageView)
-        view.addSubview(searchButton)
-        setConstraints()
-
-   
-    
-        textFielda.delegate = self
-
     }
-    @objc private func didtapSearch () {
-        print(textFielda.text!)
-        textFielda.endEditing(true)
-       
-    }
-    
-
      private func setConstraints() {
          NSLayoutConstraint.activate ([
-            textFielda.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 25),
-            textFielda.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
-            textFielda.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
-            textFielda.heightAnchor.constraint(equalToConstant: CGFloat(40)),
-            
-            searchButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -5),
-            searchButton.trailingAnchor.constraint(equalTo: textFielda.trailingAnchor, constant: 30),
-            searchButton.heightAnchor.constraint(equalToConstant: CGFloat(100)),
-            searchButton.widthAnchor.constraint(equalToConstant: CGFloat(100)),
-            
-            weatherimageView.topAnchor.constraint(equalTo: textFielda.bottomAnchor, constant: 30),
-            weatherimageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            weatherimageView.heightAnchor.constraint(equalToConstant: CGFloat(60)),
-            weatherimageView.widthAnchor.constraint(equalToConstant: CGFloat(60)),
-            
-            degreLabel.topAnchor.constraint(equalTo: weatherimageView.bottomAnchor, constant: 20),
-            degreLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -60),
-            degreLabel.heightAnchor.constraint(equalToConstant: CGFloat(100)),
-            degreLabel.widthAnchor.constraint(equalToConstant: CGFloat(120)),
-            
-            countryLabel.topAnchor.constraint(equalTo: degreLabel.bottomAnchor, constant: 0),
-            countryLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
-            countryLabel.heightAnchor.constraint(equalToConstant: CGFloat(100)),
-            countryLabel.widthAnchor.constraint(equalToConstant: CGFloat(100)),
           
+            countryLabel.topAnchor.constraint(equalTo:view.safeAreaLayoutGuide.topAnchor, constant: 40),
+            countryLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            countryLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            countryLabel.heightAnchor.constraint(equalToConstant: CGFloat(50)),
+            countryLabel.widthAnchor.constraint(equalToConstant: CGFloat(50)),
+
+            degreLabel.topAnchor.constraint(equalTo: countryLabel.bottomAnchor, constant: 20),
+            degreLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            degreLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            degreLabel.heightAnchor.constraint(equalToConstant: CGFloat(80)),
+            degreLabel.widthAnchor.constraint(equalToConstant: CGFloat(80)),
+            
+            weatherimageView.topAnchor.constraint(equalTo: degreLabel.bottomAnchor, constant: 30),
+            weatherimageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            weatherimageView.leadingAnchor.constraint(equalTo: view.trailingAnchor, constant: 40),
+            weatherimageView.heightAnchor.constraint(equalToConstant: CGFloat(60)),
+            weatherimageView.widthAnchor.constraint(equalToConstant: CGFloat(60))
          ])
     }
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print(textField.text!)
-        textField.text = ""
+
+}
+//MARK: - UITextFieldDelegate
+extension WeatherViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        guard  let text = searchBar.text else {
+            return
+        }
+        
+        let urlString = "https://api.openweathermap.org/data/2.5/weather?&appid=ac6ea6dbc7937e43a88d224a2993f0ef&units=metric\(text)"
+        DispatchQueue.main.async {
+            self.weatherManager.fetchWeather(cityName: urlString)
+        }
+       
+      
+ 
+     }
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.endEditing(true)
+     
+    }
+    func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
+        searchBar.endEditing(true)
         return true
     }
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        if textField.text != " " {
+    func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
+        if searchBar.text != "" {
             return true
         } else {
-            textField.placeholder = "Search Man"
+            searchBar.placeholder =  "Search Countries "
             return false
         }
     }
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if let city = textFielda.text {
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        if let city = searchBar.text {
             weatherManager.fetchWeather(cityName: city)
         }
-        textField.text = " "
+        searchBar.text = ""
     }
 
-
 }
-// ac6ea6dbc7937e43a88d224a2993f0ef
+//MARK: - WeatherManagerDelegate
+
+extension WeatherViewController: WeatherManagerDelegate {
+
+    
+    func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
+        DispatchQueue.main.async {
+            self.degreLabel.text = "\(weather.temperatureString )˚C "
+            self.countryLabel.text = weather.cityName
+            self.weatherimageView.image = UIImage(systemName: weather.conditionName)
+        }
+ 
+    }
+    func didFailWithError(error: Error) {
+        print(error)
+    }
+}
+
+
