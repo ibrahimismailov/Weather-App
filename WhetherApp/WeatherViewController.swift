@@ -114,7 +114,9 @@ extension WeatherViewController: UISearchBarDelegate {
 extension WeatherViewController: WeatherManagerDelegate {
     func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
         DispatchQueue.main.async {
-            self.degreLabel.text =  "\(weather.temperatureString) ˚F"
+            self.countryLabel.text = weather.cityName
+           
+            self.degreLabel.text = weather.temperatureString
             self.weatherimageView.image = UIImage(systemName: weather.conditionName)
         }
     }
